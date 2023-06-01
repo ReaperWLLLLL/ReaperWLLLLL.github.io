@@ -22,20 +22,20 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="哀其不幸，怒其不争——读《四世同堂》有感&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;老舍的这一生，十分复杂。他是极富盛名的散文家，早在初中我就已欣赏过他的《济南的冬天》。他是匠心独具的小说家，《骆驼祥子》中的那股京味儿至今仍萦绕在我的心间。他的剧作《茶馆》《龙须沟》也成为行业中的经典。可这样的一位文坛之星却在文革的黑夜中陨落，我一度对此充满疑惑。">
+  <meta name="description" content="智方桌宠开发手记（〇）——缘起与简介虽然好像用CSDN或者其他公开blog能让更多人看到，但本项目实在没什么值得学习的东西，所以还是暂且扔在这吧。貌似这个站还没有接入搜索引擎？忘了，下次看看。 言归正传，首先介绍一下这个项目的由来。本学期有幸选上了制造工程体验，而我这个单元的大作业抑或是小项目就是做一款与智能家居有关的产品，原意是想手搓一台音箱来着，略加了解后还是决定不要跳进这个大坑。所以最后决定">
 <meta property="og:type" content="article">
-<meta property="og:title" content="哀其不幸，怒其不争 ——读《四世同堂》有感">
-<meta property="og:url" content="http://example.com/2022/10/23/%E5%93%80%E5%85%B6%E4%B8%8D%E5%B9%B8%EF%BC%8C%E6%80%92%E5%85%B6%E4%B8%8D%E4%BA%89/index.html">
+<meta property="og:title" content="智方桌宠开发手记（〇）——缘起与简介">
+<meta property="og:url" content="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E3%80%87%EF%BC%89%E2%80%94%E2%80%94%E7%BC%98%E8%B5%B7%E4%B8%8E%E7%AE%80%E4%BB%8B/index.html">
 <meta property="og:site_name" content="wl-thu的小站">
-<meta property="og:description" content="哀其不幸，怒其不争——读《四世同堂》有感&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;老舍的这一生，十分复杂。他是极富盛名的散文家，早在初中我就已欣赏过他的《济南的冬天》。他是匠心独具的小说家，《骆驼祥子》中的那股京味儿至今仍萦绕在我的心间。他的剧作《茶馆》《龙须沟》也成为行业中的经典。可这样的一位文坛之星却在文革的黑夜中陨落，我一度对此充满疑惑。">
+<meta property="og:description" content="智方桌宠开发手记（〇）——缘起与简介虽然好像用CSDN或者其他公开blog能让更多人看到，但本项目实在没什么值得学习的东西，所以还是暂且扔在这吧。貌似这个站还没有接入搜索引擎？忘了，下次看看。 言归正传，首先介绍一下这个项目的由来。本学期有幸选上了制造工程体验，而我这个单元的大作业抑或是小项目就是做一款与智能家居有关的产品，原意是想手搓一台音箱来着，略加了解后还是决定不要跳进这个大坑。所以最后决定">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-10-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2022-10-23T15:01:23.162Z">
+<meta property="article:published_time" content="2023-05-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-06-01T15:00:39.437Z">
 <meta property="article:author" content="WL">
-<meta property="article:tag" content="从前文笔">
+<meta property="article:tag" content="esp32;LVGL;MPU6050;MQTT">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://example.com/2022/10/23/%E5%93%80%E5%85%B6%E4%B8%8D%E5%B9%B8%EF%BC%8C%E6%80%92%E5%85%B6%E4%B8%8D%E4%BA%89/">
+<link rel="canonical" href="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E3%80%87%EF%BC%89%E2%80%94%E2%80%94%E7%BC%98%E8%B5%B7%E4%B8%8E%E7%AE%80%E4%BB%8B/">
 
 
 <script id="page-configurations">
@@ -48,7 +48,7 @@
   };
 </script>
 
-  <title>哀其不幸，怒其不争 ——读《四世同堂》有感 | wl-thu的小站</title>
+  <title>智方桌宠开发手记（〇）——缘起与简介 | wl-thu的小站</title>
   
 
 
@@ -196,7 +196,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/23/%E5%93%80%E5%85%B6%E4%B8%8D%E5%B9%B8%EF%BC%8C%E6%80%92%E5%85%B6%E4%B8%8D%E4%BA%89/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E3%80%87%EF%BC%89%E2%80%94%E2%80%94%E7%BC%98%E8%B5%B7%E4%B8%8E%E7%AE%80%E4%BB%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avater.jpg">
@@ -209,7 +209,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          哀其不幸，怒其不争 ——读《四世同堂》有感
+          智方桌宠开发手记（〇）——缘起与简介
         </h1>
 
         <div class="post-meta">
@@ -220,7 +220,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-10-23 00:00:00 / 修改时间：23:01:23" itemprop="dateCreated datePublished" datetime="2022-10-23T00:00:00+08:00">2022-10-23</time>
+              <time title="创建时间：2023-06-01 00:00:00 / 修改时间：23:00:39" itemprop="dateCreated datePublished" datetime="2023-06-01T00:00:00+08:00">2023-06-01</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -228,7 +228,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E4%BB%8E%E5%89%8D%E6%96%87%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">从前文笔</span></a>
+                  <a href="/categories/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">智方桌宠开发手记</span></a>
                 </span>
             </span>
 
@@ -250,17 +250,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>哀其不幸，怒其不争<br>——读《四世同堂》有感<br>&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>老舍的这一生，十分复杂。他是极富盛名的散文家，早在初中我就已欣赏过他的《济南的冬天》。他是匠心独具的小说家，《骆驼祥子》中的那股京味儿至今仍萦绕在我的心间。他的剧作《茶馆》《龙须沟》也成为行业中的经典。可这样的一位文坛之星却在文革的黑夜中陨落，我一度对此充满疑惑。有人说，《四世同堂》中会有我想要的答案。一周前，我仓促间读完了这部将近百万字的小说，当我读完最后一个字，合上书，闭上眼，在脑海中搜索者合适的词汇来形容我当时的感受。我认为“哀其不幸，怒其不争”最为恰当。</p>
-<p>《四世同堂》全书中，无处不体现老舍的风格，熟悉的京味，以一个极小的切入点来反映庞大的社会现状，细致入微的描写，条理分明的叙事，这一切的一切都如同美味佳肴一般吸引着我。我仿佛坠入了书中，成为当时北平的一名苟且偷生的小小市民。<br>《四世同堂》的历史背景是什么？有人说是八年抗战，而我认为“北平陷落”更为合适，正如上文所说老舍善于以小写大。《骆驼祥子》中老舍通过一个普通的人力车夫祥子，刻画出旧社会的丑恶面目，表面上是描写祥子，然而故事的主人公，却是整个社会！而在《四世同堂》中，老舍在“北平陷落”的大背景下，通过描写北平城的一个微不足道的胡同——小羊圈中的人和事，表现了一个沦陷的北平，而北平，则是当时沦陷区的代表！老舍为我们所展现出来的，是全中国！</p>
-<p>依我拙见，《四世同堂》的行文结构与《大卫·科波菲尔》有几分相似。这两部小说的开图，都引出了大量人物，小说主要人物中的之八九十在前期便已悉数登场。随后的小说情节便围绕着主要人物层层展开。刚开始，我对人物的认识是模糊不清的，而随着一件又一件事情环环相扣，相继发生，我对人物的认识也由浅入深。待到小说结束，我已对小说里的每一个主要人物及大部分的次要人物了如指掌，谈起他们来如数家珍。老舍和狄更斯一样，给我们展现了人物的各个侧面，其中最典型的代表，要数“尤桐芳”与斯蒂福思。</p>
-<p>既然已经提到了人物，那便让我终结前文零散的评价及评论，来谈谈为什么“哀其不幸，怒其不争”会成为我读完此书的最大感受。</p>
-<p>一般情况下“哀其不幸，怒其不争”这八个字应形容一个人或一类人，但在此书中，我认为它形容的是两类人：“不幸”的人和“不争”的人。正是他们构建了日军占领下北平的社会。<br>“不幸”的人在小说中占据多数：“祁瑞宣”、“李四爷”、“小文夫妇”、“小顺子”……不胜枚举，这里所说的“不幸”并不是就人物的结局而言的，瑞宣和小顺子均幸免于难。他们的不幸在于：心中有爱国的情怀，爱国的热血，均受到种种羁绊，为了自己与家人的生存，苟活在日军的太阳旗下。最突出的，那必然是祁瑞宣。瑞宣是典型的新青年，他不再受清朝时期旧思想的影响，是一个地地道道的民国人。他进入高等学府，受过新式教育，会讲英语。他有一颗赤诚的爱国之心，对时局见解颇深，即使在民国政府军节节败退的时候也没有放弃对国家的希望。按照常理，他应该是抗战中的中坚力量，是中国扬击外敌入侵过程中尖刀的利刃。可是，他仍然苟活在小羊圈中，是他没有勇气，没有胆量吗？不，不是！只因为他还有另几个身份——祁太爷爷的长孙，祁天佑的长子，小顺子和妞儿的父亲。这几个身份就像千斤巨鼎，死死地压在他的背上。瑞宣常常为顾国还是顾家进行自我斗争，可残酷的现实无情地将“顾国”这一选择狠狠抹去。瑞宣别无他法，只能眼睁睁看着猛石病死，小崔被杀头。他的心里是痛苦的，他恨不得扛起大刀，杀光北平城中所有的侵略者。可小羊圈中的这个家需要他，这个四世同堂的家不能缺了他。无可奈何，他不得不做一个顺民，这，才是他最大的不幸。而小说中各色各样的人物，各有各的苦衷，各有各的难处，无可奈何地，他们不得不做顺民。最令我感到悲哀的，便是这样的一群不幸的人。</p>
-<p>而对于“不争”，我想稍稍改变其实际的意义，最令我感到愤怒的，便是冠晓荷、祁瑞丰、大赤包、蓝东阳之流。他们有一个共同的头衔——汉奸。其中最面目可憎的，想必是冠晓荷与大赤包夫妇。以狼狈为奸来形容他们，那狼与狈一定受到了莫大的侮辱。大赤包的眼中只有钱，冠晓荷眼里头只有权，真可谓不是一家人，不进一家门。他们为了讨好日本人，出卖了邻居钱默吟；为了巴结李空山，不惜以自己的女儿作为砝码。他们对待自己的国人狐假虎威，而对日本人则毕恭毕敬。黑暗的旧社会培养了这群以钱、权作为生命的滋养物的渣滓。他们认贼作父，而侵略者却把他们视为可有可无的狗。或许是老舍先生也对此深恶痛疾，在小说的最后，大赤包惨死狱中，冠晓荷被活埋在城外，招弟被瑞全杀死在山洞之中。虽说“恶人有恶报”的说法十分玄学，但这类结局仍让我十分痛快。</p>
-<p>“不幸”、“不争”在文中体现的均为负面情绪，难道整本小说中没有正能量？有！瑞全，仲石，默吟，桐芳便是最好的例子。比如说钱诗人，中华民族百折不挠，坚定不移，生命不息奋斗不止的精神在他身上体现得淋漓尽致。他本是一位不谙世事的诗人，可侵略的到来使其家破人亡，默吟在侵略的屠刀之下侥幸存活，这时的他，是一名不折不扣的斗士，他号召市民奋起反抗，劝勉有志青年出城，为国效力。他，是正能量的体现者，是将熄火炉中新加入的一把干柴，是迷途青年的指路明灯，是最大的护国斗士，是无畏的爱国战将。</p>
-<p>以上种种，只是《四世同堂》丰富人物中的凤毛麟角，丰富的人物能创造出丰富的情节，细致入微地展现小说内容。这部小说非常真实，向全世界揭露批判了人性的丑恶，同时也颂扬了真善美，不偏不倚，恰到好处。可正因为其真实，才会在文革时受到抨击，加之作者有旅美的经历，那更是雪上加霜。但它如今给我们带来的文学价值、现实意义、思考空间，远不能被文革所磨灭的。</p>
-<hr>
-<p>原文作于2019年</p>
-<p>感谢shi_jiang将其电子化</p>
+        <h1 id="智方桌宠开发手记（〇）——缘起与简介"><a href="#智方桌宠开发手记（〇）——缘起与简介" class="headerlink" title="智方桌宠开发手记（〇）——缘起与简介"></a>智方桌宠开发手记（〇）——缘起与简介</h1><p>虽然好像用CSDN或者其他公开blog能让更多人看到，但本项目实在没什么值得学习的东西，所以还是暂且扔在这吧。貌似这个站还没有接入搜索引擎？忘了，下次看看。</p>
+<p>言归正传，首先介绍一下这个项目的由来。本学期有幸选上了制造工程体验，而我这个单元的大作业抑或是小项目就是做一款与智能家居有关的产品，原意是想手搓一台音箱来着，略加了解后还是决定不要跳进这个大坑。所以最后决定做一款桌面宠物，这就是项目名称的由来，虽然最后做出来的鬼东西与原意大相径庭，但还是保留原有的名称。</p>
+<p>之所以说本项目没有什么值得学习的东西，是因为里面绝大部分的内容也是从网上东拼西凑而来，自己写的东西很少且一般不太完善。不过本项目横跨了硬件电路设计，元件选型与焊接，软件编写等过程，从这大大小小的坑中踏过。对我本人是一个十分大的锻炼。至于自己造轮子的工作，还是得等学习了更多的专业知识再说吧。</p>
+<p>本项目目前的完成度较低，只能说勉强达到结课要求。但由于采用了N16R8的esp32-s3作为主控，目前资源占用仅为40%，未来还有很大的开发空间。但是再不复习就要寄了，所以还是等暑假再说。</p>
+<p>本篇先罗里吧嗦到这，之后的手记应该会偏实用一些。本项目全部内容会在完备后适时开源。</p>
+<p>主要参考项目：<a target="_blank" rel="noopener" href="https://github.com/peng-zhihui/HoloCubic">Holocubic</a>,<a target="_blank" rel="noopener" href="https://oshwhub.com/45coll/a2fff3c71f5d4de2b899c64b152d3da5">Super Dial</a></p>
 
     </div>
 
@@ -286,7 +281,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://example.com/2022/10/23/%E5%93%80%E5%85%B6%E4%B8%8D%E5%B9%B8%EF%BC%8C%E6%80%92%E5%85%B6%E4%B8%8D%E4%BA%89/" title="哀其不幸，怒其不争 ——读《四世同堂》有感">http://example.com/2022/10/23/哀其不幸，怒其不争/</a>
+    <a href="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E3%80%87%EF%BC%89%E2%80%94%E2%80%94%E7%BC%98%E8%B5%B7%E4%B8%8E%E7%AE%80%E4%BB%8B/" title="智方桌宠开发手记（〇）——缘起与简介">http://example.com/2023/06/01/智方桌宠开发手记（〇）——缘起与简介/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -297,7 +292,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E4%BB%8E%E5%89%8D%E6%96%87%E7%AC%94/" rel="tag"># 从前文笔</a>
+              <a href="/tags/esp32-LVGL-MPU6050-MQTT/" rel="tag"># esp32;LVGL;MPU6050;MQTT</a>
           </div>
 
         
@@ -306,13 +301,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/10/21/%E6%9E%97%E6%B7%B1%E6%97%B6%E8%A7%81%E9%B9%BF/" rel="prev" title="林深时见鹿">
-      <i class="fa fa-chevron-left"></i> 林深时见鹿
+    <a href="/2022/10/23/%E4%BA%BA%E4%B8%96%E6%97%A0%E5%B8%B8%EF%BC%8C%E8%87%B3%E4%BA%B2%E6%B0%B8%E9%A9%BB%E5%BF%83%E9%97%B4/" rel="prev" title="人世无常，至亲永驻心间">
+      <i class="fa fa-chevron-left"></i> 人世无常，至亲永驻心间
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2022/10/23/%E6%97%A0%E7%BA%BF%E7%94%B5%E6%B6%88%E5%A4%B1%E4%B9%8B%E6%97%A5/" rel="next" title="无线电消失之日">
-      无线电消失之日 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -377,6 +369,7 @@
 <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=573384240&auto=0&height=66"></iframe>
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E3%80%87%EF%BC%89%E2%80%94%E2%80%94%E7%BC%98%E8%B5%B7%E4%B8%8E%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">智方桌宠开发手记（〇）——缘起与简介</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
