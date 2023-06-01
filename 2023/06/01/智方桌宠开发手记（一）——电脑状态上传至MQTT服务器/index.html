@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/heart32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/heart.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-bounce.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"manual","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="智方桌宠开发手记（一）——电脑状态上传至MQTT服务器智方桌宠开发手记（〇）——缘起与简介  主要参考资料：基于Arduino打造DIY极客电脑性能监控系统，基于AIDA64的电脑性能监控  如何在电脑运行的时候不用打开任务管理器就能获取电脑状态呢，如何让平平无奇的一个小方块看上去b格很高呢？远程状态监视站是个一石二鸟的好东西！ 这并不是一件难以实现的事情，经过在简中互联网的一番*里淘金，大致确定">
+<meta property="og:type" content="article">
+<meta property="og:title" content="智方桌宠开发手记（一）——电脑状态上传至MQTT服务器">
+<meta property="og:url" content="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E7%94%B5%E8%84%91%E7%8A%B6%E6%80%81%E4%B8%8A%E4%BC%A0%E8%87%B3MQTT%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+<meta property="og:site_name" content="wl-thu的小站">
+<meta property="og:description" content="智方桌宠开发手记（一）——电脑状态上传至MQTT服务器智方桌宠开发手记（〇）——缘起与简介  主要参考资料：基于Arduino打造DIY极客电脑性能监控系统，基于AIDA64的电脑性能监控  如何在电脑运行的时候不用打开任务管理器就能获取电脑状态呢，如何让平平无奇的一个小方块看上去b格很高呢？远程状态监视站是个一石二鸟的好东西！ 这并不是一件难以实现的事情，经过在简中互联网的一番*里淘金，大致确定">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/.%5Cimage%5Cmonitor.png">
+<meta property="og:image" content="g:\blog\source_posts\image\remote.png">
+<meta property="og:image" content="g:\blog\source_posts\image\web_UI.png">
+<meta property="og:image" content="g:\blog\source_posts\image\dataJson.png">
+<meta property="og:image" content="g:\blog\source_posts\image\data.png">
+<meta property="og:image" content="http://example.com/.%5Cimage%5ClabtopData.jpg">
+<meta property="article:published_time" content="2023-05-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-06-01T16:09:56.875Z">
+<meta property="article:author" content="WL">
+<meta property="article:tag" content="esp32">
+<meta property="article:tag" content="LVGL">
+<meta property="article:tag" content="MPU6050">
+<meta property="article:tag" content="MQTT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/.%5Cimage%5Cmonitor.png">
+
+<link rel="canonical" href="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E7%94%B5%E8%84%91%E7%8A%B6%E6%80%81%E4%B8%8A%E4%BC%A0%E8%87%B3MQTT%E6%9C%8D%E5%8A%A1%E5%99%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>智方桌宠开发手记（一）——电脑状态上传至MQTT服务器 | wl-thu的小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">wl-thu的小站</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E7%94%B5%E8%84%91%E7%8A%B6%E6%80%81%E4%B8%8A%E4%BC%A0%E8%87%B3MQTT%E6%9C%8D%E5%8A%A1%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.jpg">
+      <meta itemprop="name" content="WL">
+      <meta itemprop="description" content="祝自己生日快乐~">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wl-thu的小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          智方桌宠开发手记（一）——电脑状态上传至MQTT服务器
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-06-01 00:00:00" itemprop="dateCreated datePublished" datetime="2023-06-01T00:00:00+08:00">2023-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-06-02 00:09:56" itemprop="dateModified" datetime="2023-06-02T00:09:56+08:00">2023-06-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">智方桌宠开发手记</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="智方桌宠开发手记（一）——电脑状态上传至MQTT服务器"><a href="#智方桌宠开发手记（一）——电脑状态上传至MQTT服务器" class="headerlink" title="智方桌宠开发手记（一）——电脑状态上传至MQTT服务器"></a>智方桌宠开发手记（一）——电脑状态上传至MQTT服务器</h1><p><a target="_blank" rel="noopener" href="https://reaperwlllll.github.io/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E3%80%87%EF%BC%89%E2%80%94%E2%80%94%E7%BC%98%E8%B5%B7%E4%B8%8E%E7%AE%80%E4%BB%8B/">智方桌宠开发手记（〇）——缘起与简介</a></p>
+<hr>
+<p>主要参考资料：<a target="_blank" rel="noopener" href="https://www.zhihu.com/tardis/zm/art/469956102?source_id=1005">基于Arduino打造DIY极客电脑性能监控系统</a>，<a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_42487906/article/details/119990801">基于AIDA64的电脑性能监控</a></p>
+<hr>
+<p>如何在电脑运行的时候不用打开任务管理器就能获取电脑状态呢，如何让平平无奇的一个小方块看上去b格很高呢？远程状态监视站是个一石二鸟的好东西！</p>
+<p>这并不是一件难以实现的事情，经过在简中互联网的一番*里淘金，大致确定了以下实现步骤。</p>
+<ol>
+<li>获取电脑状态</li>
+<li>将电脑状态上传至本地端口或上传至mqtt服务器</li>
+<li>esp32获取并解析状态数据，显示到屏幕上</li>
+</ol>
+<p>理论成立，开始实践。首先使用开源软件<a target="_blank" rel="noopener" href="https://openhardwaremonitor.org/">Open Hardware Monitor</a>获取电脑状态信息。虽然理论上AIDA64更高级功能也更多一些，但是貌似AIDA64对AMD的支持并不是十分之好，一直获取不到CPU的占用率，遂换用OHM。</p>
+<p><img src="/.%5Cimage%5Cmonitor.png" alt="OHM"></p>
+<p>在第一篇参考资料中，作者是使用python脚本直接从OPM中获取信息，这部分属于我的知识盲区，未敢复现。遂另辟蹊径，在OPM中有一个功能：Remote Web Server。使能这个选项后即可在本地端口上通过web界面查看各状态。</p>
+<p><img src="G:\blog\source_posts\image\remote.png" alt="Remote Web Server"></p>
+<p><img src="G:\blog\source_posts\image\web_UI.png" alt="web界面"></p>
+<p>理论上此时通过端口映射就可以实现远程的状态监控，然而这并不是本项目需要完成的内容。倘若只需实现局域网内的状态监视的话，到这一步就足够了。esp32可以访问这个端口并解析数据。但只局限于局域网的状态传输显然不够优雅，且OPM貌似不支持选择性输出数据（AIDA64可以），因此esp32获取并解析这些数据可能会浪费部分的资源，并丢失一定的实时性。因此需要在电脑端就筛选出需要的数据，并打包上传至MQTT服务器，这样esp32只需要订阅一个topic就可以获取电脑的状态。</p>
+<p>数据处理那还是python给力，遂决定编写一个脚本来完成数据的获取、处理、和发送。查看浏览器后台发现web每次刷新时都会请求一次data.json</p>
+<p><img src="G:\blog\source_posts\image\dataJson.png" alt="dataJson"></p>
+<p>查看data.json发现里面确实包含了所有需要的数据。</p>
+<p><img src="G:\blog\source_posts\image\data.png" alt="dataTxt"></p>
+<p>python可以通过jsonpath很方便快捷的筛选出想要的数据，因此定义函数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">getData</span>(<span class="params">dictionary,<span class="built_in">id</span></span>):</span><br><span class="line">    <span class="comment">#通过id获取想要数据的父级</span></span><br><span class="line">    temp = jsonpath.jsonpath(dictionary, <span class="string">&#x27;$..[?(@.id==%d)]&#x27;</span> % <span class="built_in">id</span>) </span><br><span class="line">    <span class="comment">#获取所需数据</span></span><br><span class="line">    Value = jsonpath.jsonpath(temp,<span class="string">&#x27;$..Value&#x27;</span>)[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">return</span> Value</span><br></pre></td></tr></table></figure>
+
+<p>通过此函数筛选出我想要的数据</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#新建一个json包含五个数据</span></span><br><span class="line">labtop = &#123;</span><br><span class="line">    <span class="string">&quot;cpuTemp&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;cpuUsed&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;memoryUsed&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;memoryUsedData&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;gpuUsed&quot;</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#数据发送</span></span><br><span class="line">timeNow=time.time()</span><br><span class="line"><span class="keyword">if</span> timeNow-lastUpdateTime&gt;<span class="number">3</span>:<span class="comment">#3s发送一次</span></span><br><span class="line">    lastUpdateTime=timeNow</span><br><span class="line">    f = req.urlopen(<span class="string">&#x27;http://192.168.137.1:8085/data.json&#x27;</span>)</span><br><span class="line">    data = json.loads(f.read().decode(<span class="string">&#x27;utf-8&#x27;</span>))</span><br><span class="line">    cpuTemp = getData(data,<span class="number">15</span>)</span><br><span class="line">    cpuUsed = getData(data,<span class="number">17</span>)</span><br><span class="line">    memoryUsed = getData(data,<span class="number">39</span>)</span><br><span class="line">    memoryUsedData = getData(data,<span class="number">41</span>) </span><br><span class="line">    gpuUsed = getData(data,<span class="number">72</span>)</span><br><span class="line">    <span class="comment">##将上述五个数据打包成json格式发送</span></span><br><span class="line">    labtop[<span class="string">&quot;cpuTemp&quot;</span>] = cpuTemp</span><br><span class="line">    labtop[<span class="string">&quot;cpuUsed&quot;</span>] = cpuUsed</span><br><span class="line">    labtop[<span class="string">&quot;memoryUsed&quot;</span>] = memoryUsed</span><br><span class="line">    labtop[<span class="string">&quot;memoryUsedData&quot;</span>] = memoryUsedData</span><br><span class="line">    labtop[<span class="string">&quot;gpuUsed&quot;</span>] = gpuUsed</span><br><span class="line">    <span class="comment">#publish json包，此处+/set向除本机外所有设备推送数据</span></span><br><span class="line">    client.publish(bemfaTopic+<span class="string">&quot;/set&quot;</span>, json.dumps(labtop))</span><br></pre></td></tr></table></figure>
+
+<p>自此电脑的性能数据已经上传至mqtt服务器，esp32只需要解析json包就可以直接获取。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">bemfa_callback</span><span class="params">(<span class="type">char</span> *topic, byte *payload, <span class="type">unsigned</span> <span class="type">int</span> length)</span></span><br><span class="line">&#123;</span><br><span class="line">  dataFlag = <span class="literal">false</span>;<span class="comment">//接收到数据后，将数据接收标志位置为false</span></span><br><span class="line">  Serial.print(<span class="string">&quot;Topic:&quot;</span>);</span><br><span class="line">  Serial.println(topic);</span><br><span class="line">  String msg = <span class="string">&quot;&quot;</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">    msg += (<span class="type">char</span>)payload[i];</span><br><span class="line">  &#125;</span><br><span class="line">  DynamicJsonDocument <span class="title function_">doc</span><span class="params">(<span class="number">1024</span>)</span>;</span><br><span class="line">  deserializeJson(doc, msg);</span><br><span class="line">  cpuTemp = doc[<span class="string">&quot;cpuTemp&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  cpuLoad = doc[<span class="string">&quot;cpuUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  gpuLoad = doc[<span class="string">&quot;gpuUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  memoryLoad = doc[<span class="string">&quot;memoryUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  memoryUsed = doc[<span class="string">&quot;memoryUsedData&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  dataFlag = <span class="literal">true</span>;<span class="comment">//数据接收完成，将数据接收标志位置为true,防止lvgl和mqtt同时操作数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在只要电脑上OPM和脚本都在运行，esp32还有网的话，在哪都能看到电脑状态啦！理论上只需要给脚本加上开机自启和自动打开OPM，就可以监测有没有好室友偷玩你的电脑，嘻嘻。</p>
+<p>目前实现效果如图：(tft屏幕目测和拍出来差别还是挺大的)</p>
+<p><img src="/.%5Cimage%5ClabtopData.jpg" alt="远程状态监视"></p>
+<p>mqtt服务器可以自己架设，也可以使用巴法云、阿里云等云端mqtt，目前我使用的是巴法云，毕竟没什么设备需要管理，巴法云足够了。</p>
+<p>脚本代码完整代码在此，mqtt的部分可以参考巴法云官方例程<a target="_blank" rel="noopener" href="https://bbs.bemfa.com/81">python 接入，mqtt和tcp - 巴法开放论坛 (bemfa.com)</a>。还有很多可以完善的地方，欢迎大佬教我更为优雅的实现方式~</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># %%</span></span><br><span class="line"><span class="comment"># coding=utf-8</span></span><br><span class="line"><span class="keyword">import</span> urllib.request <span class="keyword">as</span> req</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> jsonpath</span><br><span class="line"><span class="keyword">import</span> paho.mqtt.client <span class="keyword">as</span> mqtt</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">HOST = <span class="string">&quot;bemfa.com&quot;</span></span><br><span class="line">PORT = <span class="number">9501</span></span><br><span class="line">client_id = <span class="string">&quot;&quot;</span> <span class="comment">#自己的巴法云私钥</span></span><br><span class="line">bemfaTopic = <span class="string">&quot;labtopData&quot;</span></span><br><span class="line">lastUpdateTime = time.time()</span><br><span class="line"></span><br><span class="line"><span class="comment">#新建一个json包含五个数据</span></span><br><span class="line">labtop = &#123;</span><br><span class="line">    <span class="string">&quot;cpuTemp&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;cpuUsed&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;memoryUsed&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;memoryUsedData&quot;</span>: <span class="number">0</span>,</span><br><span class="line">    <span class="string">&quot;gpuUsed&quot;</span>: <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">on_connect</span>(<span class="params">client, userdata, flags, rc</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Connected with result code &quot;</span>+<span class="built_in">str</span>(rc))</span><br><span class="line">    client.subscribe(bemfaTopic)         <span class="comment"># 订阅消息</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#消息接收</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">on_message</span>(<span class="params">client, userdata, msg</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;主题:&quot;</span>+msg.topic+<span class="string">&quot; 消息:&quot;</span>+<span class="built_in">str</span>(msg.payload.decode(<span class="string">&#x27;utf-8&#x27;</span>)))</span><br><span class="line"></span><br><span class="line"><span class="comment">#订阅成功</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">on_subscribe</span>(<span class="params">client, userdata, mid, granted_qos</span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;On Subscribed: qos = %d&quot;</span> % granted_qos)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 失去连接</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">on_disconnect</span>(<span class="params">client, userdata, rc</span>):</span><br><span class="line">    <span class="keyword">if</span> rc != <span class="number">0</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;Unexpected disconnection %s&quot;</span> % rc)</span><br><span class="line"></span><br><span class="line">f = req.urlopen(<span class="string">&#x27;本地端口/data.json&#x27;</span>)</span><br><span class="line"></span><br><span class="line">data = json.loads(f.read().decode(<span class="string">&#x27;utf-8&#x27;</span>))</span><br><span class="line"><span class="comment"># print(data)</span></span><br><span class="line"><span class="comment"># print(type(data))</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">getData</span>(<span class="params">dictionary,<span class="built_in">id</span></span>):</span><br><span class="line">    temp = jsonpath.jsonpath(dictionary, <span class="string">&#x27;$..[?(@.id==%d)]&#x27;</span> % <span class="built_in">id</span>)</span><br><span class="line">    Value = jsonpath.jsonpath(temp,<span class="string">&#x27;$..Value&#x27;</span>)[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">return</span> Value</span><br><span class="line"></span><br><span class="line"><span class="comment"># %%</span></span><br><span class="line">client = mqtt.Client(client_id)</span><br><span class="line">client.username_pw_set(<span class="string">&quot;userName&quot;</span>, <span class="string">&quot;passwd&quot;</span>)</span><br><span class="line">client.on_connect = on_connect</span><br><span class="line">client.on_message = on_message</span><br><span class="line">client.on_subscribe = on_subscribe</span><br><span class="line">client.on_disconnect = on_disconnect</span><br><span class="line">client.connect(HOST, PORT, <span class="number">60</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    client.loop_start()</span><br><span class="line">    timeNow=time.time()</span><br><span class="line">    <span class="keyword">if</span> timeNow-lastUpdateTime&gt;<span class="number">3</span>:</span><br><span class="line">        lastUpdateTime=timeNow</span><br><span class="line">        f = req.urlopen(<span class="string">&#x27;本地端口/data.json&#x27;</span>)</span><br><span class="line">        data = json.loads(f.read().decode(<span class="string">&#x27;utf-8&#x27;</span>))</span><br><span class="line">        cpuTemp = getData(data,<span class="number">15</span>)</span><br><span class="line">        cpuUsed = getData(data,<span class="number">17</span>)</span><br><span class="line">        memoryUsed = getData(data,<span class="number">39</span>)</span><br><span class="line">        memoryUsedData = getData(data,<span class="number">41</span>) </span><br><span class="line">        gpuUsed = getData(data,<span class="number">72</span>)</span><br><span class="line">        <span class="comment">##将上述五个数据打包成json格式发送</span></span><br><span class="line">        labtop[<span class="string">&quot;cpuTemp&quot;</span>] = cpuTemp</span><br><span class="line">        labtop[<span class="string">&quot;cpuUsed&quot;</span>] = cpuUsed</span><br><span class="line">        labtop[<span class="string">&quot;memoryUsed&quot;</span>] = memoryUsed</span><br><span class="line">        labtop[<span class="string">&quot;memoryUsedData&quot;</span>] = memoryUsedData</span><br><span class="line">        labtop[<span class="string">&quot;gpuUsed&quot;</span>] = gpuUsed</span><br><span class="line">        <span class="comment">#publish json包</span></span><br><span class="line">        client.publish(bemfaTopic+<span class="string">&quot;/set&quot;</span>, json.dumps(labtop))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    client.loop_stop()</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+
+   <div>
+     <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:24px;">-------------本文结束<i class="fa fa-hand-spock-o"></i>感谢您的阅读-------------</div>
+    
+</div>
+   </div>
+ 
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>WL
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E7%94%B5%E8%84%91%E7%8A%B6%E6%80%81%E4%B8%8A%E4%BC%A0%E8%87%B3MQTT%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="智方桌宠开发手记（一）——电脑状态上传至MQTT服务器">http://example.com/2023/06/01/智方桌宠开发手记（一）——电脑状态上传至MQTT服务器/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/esp32/" rel="tag"># esp32</a>
+              <a href="/tags/LVGL/" rel="tag"># LVGL</a>
+              <a href="/tags/MPU6050/" rel="tag"># MPU6050</a>
+              <a href="/tags/MQTT/" rel="tag"># MQTT</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/10/23/%E4%BA%BA%E4%B8%96%E6%97%A0%E5%B8%B8%EF%BC%8C%E8%87%B3%E4%BA%B2%E6%B0%B8%E9%A9%BB%E5%BF%83%E9%97%B4/" rel="prev" title="人世无常，至亲永驻心间">
+      <i class="fa fa-chevron-left"></i> 人世无常，至亲永驻心间
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E3%80%87%EF%BC%89%E2%80%94%E2%80%94%E7%BC%98%E8%B5%B7%E4%B8%8E%E7%AE%80%E4%BB%8B/" rel="next" title="智方桌宠开发手记（〇）——缘起与简介">
+      智方桌宠开发手记（〇）——缘起与简介 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NzQ0OS8zMzkxMw=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=573384240&auto=0&height=66"></iframe>
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E7%94%B5%E8%84%91%E7%8A%B6%E6%80%81%E4%B8%8A%E4%BC%A0%E8%87%B3MQTT%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">智方桌宠开发手记（一）——电脑状态上传至MQTT服务器</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="WL"
+      src="/images/avater.jpg">
+  <p class="site-author-name" itemprop="name">WL</p>
+  <div class="site-description" itemprop="description">祝自己生日快乐~</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://space.bilibili.com/327368340?spm_id_from=333.1007.0.0" title="bilibili → https:&#x2F;&#x2F;space.bilibili.com&#x2F;327368340?spm_id_from&#x3D;333.1007.0.0" rel="noopener" target="_blank"><i class="fab fa-thumbs-up fa-fw"></i>bilibili</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      b站主页
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://space.bilibili.com/327368340?spm_id_from=333.1007.0.0" title="https:&#x2F;&#x2F;space.bilibili.com&#x2F;327368340?spm_id_from&#x3D;333.1007.0.0" rel="noopener" target="_blank">夕星日生</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">WL</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <span id="busuanzi_container_site_pv">总访问量<span id="busuanzi_value_site_pv"></span>次</span>
+    <span class="post-meta-divider">|</span>
+    <span id="busuanzi_container_site_uv">总访客数<span id="busuanzi_value_site_uv"></span>人</span>
+    <span class="post-meta-divider">|</span>
+<!-- 不蒜子计数初始值纠正 -->
+<script>
+$(document).ready(function() {
+
+    var int = setInterval(fixCount, 50);  // 50ms周期检测函数
+    var countOffset = 20000;  // 初始化首次数据
+
+    function fixCount() {            
+       if (document.getElementById("busuanzi_container_site_pv").style.display != "none")
+        {
+            $("#busuanzi_value_site_pv").html(parseInt($("#busuanzi_value_site_pv").html()) + countOffset); 
+            clearInterval(int);
+        }                  
+        if ($("#busuanzi_container_site_pv").css("display") != "none")
+        {
+            $("#busuanzi_value_site_uv").html(parseInt($("#busuanzi_value_site_uv").html()) + countOffset); // 加上初始数据 
+            clearInterval(int); // 停止检测
+        }  
+    }
+       	
+});
+</script> 
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginModelPath":"assets/","model":{"jsonPath":"/live2dw/assets/hibiki.model.json"},"display":{"position":"right","width":200,"height":400},"mobile":{"show":true},"rect":"opacity:0.7","log":false,"pluginJsPath":"lib/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
