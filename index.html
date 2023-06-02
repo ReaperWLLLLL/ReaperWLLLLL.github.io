@@ -298,7 +298,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-06-02 00:23:10" itemprop="dateModified" datetime="2023-06-02T00:23:10+08:00">2023-06-02</time>
+                <time title="修改时间：2023-06-02 10:49:13" itemprop="dateModified" datetime="2023-06-02T10:49:13+08:00">2023-06-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -333,11 +333,10 @@
 <li>esp32获取并解析状态数据，显示到屏幕上</li>
 </ol>
 <p>理论成立，开始实践。首先使用开源软件<a target="_blank" rel="noopener" href="https://openhardwaremonitor.org/">Open Hardware Monitor</a>获取电脑状态信息。虽然理论上AIDA64更高级功能也更多一些，但是貌似AIDA64对AMD的支持并不是十分之好，一直获取不到CPU的占用率，遂换用OHM。</p>
-<p><img src="https://s1.ax1x.com/2023/06/02/p9zhdrF.png" alt="OHM"></p>
-<p>在第一篇参考资料中，作者是使用python脚本直接从OPM中获取信息，这部分属于我的知识盲区，未敢复现。遂另辟蹊径，在OPM中有一个功能：Remote Web Server。使能这个选项后即可在本地端口上通过web界面查看各状态。</p>
+<p>在第一篇参考资料中，作者是使用python脚本直接从OHM中获取信息，这部分属于我的知识盲区，未敢复现。遂另辟蹊径，在OHM中有一个功能：Remote Web Server。使能这个选项后即可在本地端口上通过web界面查看各状态。</p>
 <p><img src="https://s1.ax1x.com/2023/06/02/p9zhNvT.png" alt="Remote Web Server"></p>
-<p><img src="G:\blog\source_posts\image\web_UI.png" alt="web界面"></p>
-<p>理论上此时通过端口映射就可以实现远程的状态监控，然而这并不是本项目需要完成的内容。倘若只需实现局域网内的状态监视的话，到这一步就足够了。esp32可以访问这个端口并解析数据。但只局限于局域网的状态传输显然不够优雅，且OPM貌似不支持选择性输出数据（AIDA64可以），因此esp32获取并解析这些数据可能会浪费部分的资源，并丢失一定的实时性。因此需要在电脑端就筛选出需要的数据，并打包上传至MQTT服务器，这样esp32只需要订阅一个topic就可以获取电脑的状态。</p>
+<p><img src="https://s1.ax1x.com/2023/06/02/p9zhdrF.png" alt="web界面"></p>
+<p>理论上此时通过端口映射就可以实现远程的状态监控，然而这并不是本项目需要完成的内容。倘若只需实现局域网内的状态监视的话，到这一步就足够了。esp32可以访问这个端口并解析数据。但只局限于局域网的状态传输显然不够优雅，且OHM貌似不支持选择性输出数据（AIDA64可以），因此esp32获取并解析这些数据可能会浪费部分的资源，并丢失一定的实时性。因此需要在电脑端就筛选出需要的数据，并打包上传至MQTT服务器，这样esp32只需要订阅一个topic就可以获取电脑的状态。</p>
 <p>数据处理那还是python给力，遂决定编写一个脚本来完成数据的获取、处理、和发送。查看浏览器后台发现web每次刷新时都会请求一次data.json</p>
 <p><img src="https://s1.ax1x.com/2023/06/02/p9zhaKU.png" alt="dataJson"></p>
 <p>查看data.json发现里面确实包含了所有需要的数据。</p>
@@ -353,7 +352,7 @@
 <p>自此电脑的性能数据已经上传至mqtt服务器，esp32只需要解析json包就可以直接获取。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">bemfa_callback</span><span class="params">(<span class="type">char</span> *topic, byte *payload, <span class="type">unsigned</span> <span class="type">int</span> length)</span></span><br><span class="line">&#123;</span><br><span class="line">  dataFlag = <span class="literal">false</span>;<span class="comment">//接收到数据后，将数据接收标志位置为false</span></span><br><span class="line">  Serial.print(<span class="string">&quot;Topic:&quot;</span>);</span><br><span class="line">  Serial.println(topic);</span><br><span class="line">  String msg = <span class="string">&quot;&quot;</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">    msg += (<span class="type">char</span>)payload[i];</span><br><span class="line">  &#125;</span><br><span class="line">  DynamicJsonDocument <span class="title function_">doc</span><span class="params">(<span class="number">1024</span>)</span>;</span><br><span class="line">  deserializeJson(doc, msg);</span><br><span class="line">  cpuTemp = doc[<span class="string">&quot;cpuTemp&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  cpuLoad = doc[<span class="string">&quot;cpuUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  gpuLoad = doc[<span class="string">&quot;gpuUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  memoryLoad = doc[<span class="string">&quot;memoryUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  memoryUsed = doc[<span class="string">&quot;memoryUsedData&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  dataFlag = <span class="literal">true</span>;<span class="comment">//数据接收完成，将数据接收标志位置为true,防止lvgl和mqtt同时操作数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>现在只要电脑上OPM和脚本都在运行，esp32还有网的话，在哪都能看到电脑状态啦！理论上只需要给脚本加上开机自启和自动打开OPM，就可以监测有没有好室友偷玩你的电脑，嘻嘻。</p>
+<p>现在只要电脑上OHM和脚本都在运行，esp32还有网的话，在哪都能看到电脑状态啦！理论上只需要给脚本加上开机自启和自动打开OHM，就可以监测有没有好室友偷玩你的电脑，嘻嘻。</p>
 <p>目前实现效果如图：(tft屏幕目测和拍出来差别还是挺大的)</p>
 <p><img src="https://s1.ax1x.com/2023/06/02/p9zhBVJ.jpg" alt="远程状态监视"></p>
 <p>mqtt服务器可以自己架设，也可以使用巴法云、阿里云等云端mqtt，目前我使用的是巴法云，毕竟没什么设备需要管理，巴法云足够了。</p>
@@ -454,81 +453,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/23/%E6%97%A0%E7%BA%BF%E7%94%B5%E6%B6%88%E5%A4%B1%E4%B9%8B%E6%97%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avater.jpg">
-      <meta itemprop="name" content="WL">
-      <meta itemprop="description" content="祝自己生日快乐~">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="wl-thu的小站">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/10/23/%E6%97%A0%E7%BA%BF%E7%94%B5%E6%B6%88%E5%A4%B1%E4%B9%8B%E6%97%A5/" class="post-title-link" itemprop="url">无线电消失之日</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-10-23 00:00:00 / 修改时间：22:50:06" itemprop="dateCreated datePublished" datetime="2022-10-23T00:00:00+08:00">2022-10-23</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E4%BB%8E%E5%89%8D%E6%96%87%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">从前文笔</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="无线电消失之日"><a href="#无线电消失之日" class="headerlink" title="无线电消失之日"></a>无线电消失之日</h1><p>2022年2月22日，一个再普通不过的冬日，我一起床便沐浴在了冬日的暖阳中，伸伸懒腰，准备平常地度过这平常的假日。<br>真奇怪，爷爷每天都会用他珍藏已久的老收音机听新闻的，他老人家眼睛不好，这是他为数不多的几个雷打不动的习惯之一呀，怎么今天家里安安静静的？我走出卧室门，看到爷爷坐在沙发上，盯着他的收音机，脸上愁云密布。一看到我醒了6，他也不顾我神情迷糊，一把把我拉到茶几前，让我给他修好那台收音机。我把调谐旋钮转了又转，开关开了又关，可收音机就是不发出一点声音，连以往令人烦躁的杂音都消踪匿迹。“怎么感觉今天的无线电波都消失了一样？”我一头雾水，不知所措。<br>突然，家里老旧的固定电话响起了刺耳的铃声，我连忙跑到电话前，掸去上面厚厚的一层灰，按下了免提。“现在播报紧急通告，因特定频段的无线电波在地球大气中失去传播能力，所以请……”机械的女声在扬声器中单调的重复着闻所未闻的政府通告。<br>无线电消失了!<br>无线电看不见摸不着，先前在我心中没有一点存在感，直到它消失了我才意识到他的重要性。不光是爷爷的收音机无法工作了，我的移动电话也是信号全无，拨不进去也打不进来，往日即时方便的通讯工具也无法使用。我们与外界的通讯方式只剩下不需要以无线电为传播途径的固定电话了。电话里机械的女声一条一条地播放着突发状况，我守在电话机前断断续续听了两个小时，才了解到无线电消失对整个世界的影响。<br>无线电波是在凌晨4：14分突然失去传播能力的，具体原因不明。全球的无线通讯完全中断，全网络瘫痪。各国都紧急启用了有线通讯网以保障最基本的通讯需求，可这也仅仅局限于铺设了通讯电缆的地区，至于偏远地区则彻底失去了联系他人的工具。这还不是最严重的的后果，稳定的无线电通讯对于飞机来说是安全的保障，无线电消失了，意味着尚在飞行的所有军民用飞行器都失去了定位和领航，他们就像没有眼睛的巨鸟在空中无助的飞翔，所有飞机上的人都命悬一线。<br>正在航行的船舶也需要无线电通讯，它们在失去了导航系统的精准定位之后，只能重新拾起早就被遗忘在了大航海时代的罗盘和六分仪。再先进的技术在浩瀚的大海中都无用武之地，没有了前方航线上的风暴预测，许多船只一头扎进巨浪滔天的风暴去，无法脱逃，再也不能抵达目的地的避风港。<br>无线电的消失不仅在地球上是一种灾难，在太空中更是航天工程的灭顶之灾。所有的卫星在瞬间失去地面操控与信息传输能力，成为太空中漂浮的铁块。国际空间站失去与休斯顿的连接，四个国家的13名宇航员成为太空流浪者。印度国家宇航局本计划在今日完成其三年前未尽的探测器登月项目，可又在成功的大门前功亏一篑。<br>无线电消失仅仅6个小时，地球的秩序就陷入一片混乱，街道上到处都是恐慌的人群，他们举着手机，无助地东奔西跑寻找信号。更有悲观人群认为这是世界末日的前兆，不顾形象在街头崩溃大哭。乱象此起彼伏，维护秩序的警察忙得焦头烂额……<br>人类费劲千辛万苦建立起的辉煌文明就要因为无线电的消失而毁灭吗？我抱着头，不断设想着各种最可怕的后果。<br>“昨日，’驿站’全球无线电通讯系统最后一个基站架设完毕，中国成为第一个具有在世界范围内进行低成本大容量无线电数据传输能力的国家！”我的耳边莫名其妙的传来了新闻主播雄厚自豪的声音。</p>
-<hr>
-<p>原文作于2019年，为高一一次省级征文比赛的参赛稿</p>
-<p>（悄咪咪说一句我是一等奖）</p>
-<p>感谢王红艳老师的指导</p>
-<p>祝她早日脱单</p>
-
-      
-    </div>
-
-    
-    
-    
-
-
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/23/%E5%93%80%E5%85%B6%E4%B8%8D%E5%B9%B8%EF%BC%8C%E6%80%92%E5%85%B6%E4%B8%8D%E4%BA%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -588,6 +512,81 @@
 <hr>
 <p>原文作于2019年</p>
 <p>感谢shi_jiang将其电子化</p>
+
+      
+    </div>
+
+    
+    
+    
+
+
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/23/%E6%97%A0%E7%BA%BF%E7%94%B5%E6%B6%88%E5%A4%B1%E4%B9%8B%E6%97%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avater.jpg">
+      <meta itemprop="name" content="WL">
+      <meta itemprop="description" content="祝自己生日快乐~">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wl-thu的小站">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/10/23/%E6%97%A0%E7%BA%BF%E7%94%B5%E6%B6%88%E5%A4%B1%E4%B9%8B%E6%97%A5/" class="post-title-link" itemprop="url">无线电消失之日</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-10-23 00:00:00 / 修改时间：22:50:06" itemprop="dateCreated datePublished" datetime="2022-10-23T00:00:00+08:00">2022-10-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E4%BB%8E%E5%89%8D%E6%96%87%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">从前文笔</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="无线电消失之日"><a href="#无线电消失之日" class="headerlink" title="无线电消失之日"></a>无线电消失之日</h1><p>2022年2月22日，一个再普通不过的冬日，我一起床便沐浴在了冬日的暖阳中，伸伸懒腰，准备平常地度过这平常的假日。<br>真奇怪，爷爷每天都会用他珍藏已久的老收音机听新闻的，他老人家眼睛不好，这是他为数不多的几个雷打不动的习惯之一呀，怎么今天家里安安静静的？我走出卧室门，看到爷爷坐在沙发上，盯着他的收音机，脸上愁云密布。一看到我醒了6，他也不顾我神情迷糊，一把把我拉到茶几前，让我给他修好那台收音机。我把调谐旋钮转了又转，开关开了又关，可收音机就是不发出一点声音，连以往令人烦躁的杂音都消踪匿迹。“怎么感觉今天的无线电波都消失了一样？”我一头雾水，不知所措。<br>突然，家里老旧的固定电话响起了刺耳的铃声，我连忙跑到电话前，掸去上面厚厚的一层灰，按下了免提。“现在播报紧急通告，因特定频段的无线电波在地球大气中失去传播能力，所以请……”机械的女声在扬声器中单调的重复着闻所未闻的政府通告。<br>无线电消失了!<br>无线电看不见摸不着，先前在我心中没有一点存在感，直到它消失了我才意识到他的重要性。不光是爷爷的收音机无法工作了，我的移动电话也是信号全无，拨不进去也打不进来，往日即时方便的通讯工具也无法使用。我们与外界的通讯方式只剩下不需要以无线电为传播途径的固定电话了。电话里机械的女声一条一条地播放着突发状况，我守在电话机前断断续续听了两个小时，才了解到无线电消失对整个世界的影响。<br>无线电波是在凌晨4：14分突然失去传播能力的，具体原因不明。全球的无线通讯完全中断，全网络瘫痪。各国都紧急启用了有线通讯网以保障最基本的通讯需求，可这也仅仅局限于铺设了通讯电缆的地区，至于偏远地区则彻底失去了联系他人的工具。这还不是最严重的的后果，稳定的无线电通讯对于飞机来说是安全的保障，无线电消失了，意味着尚在飞行的所有军民用飞行器都失去了定位和领航，他们就像没有眼睛的巨鸟在空中无助的飞翔，所有飞机上的人都命悬一线。<br>正在航行的船舶也需要无线电通讯，它们在失去了导航系统的精准定位之后，只能重新拾起早就被遗忘在了大航海时代的罗盘和六分仪。再先进的技术在浩瀚的大海中都无用武之地，没有了前方航线上的风暴预测，许多船只一头扎进巨浪滔天的风暴去，无法脱逃，再也不能抵达目的地的避风港。<br>无线电的消失不仅在地球上是一种灾难，在太空中更是航天工程的灭顶之灾。所有的卫星在瞬间失去地面操控与信息传输能力，成为太空中漂浮的铁块。国际空间站失去与休斯顿的连接，四个国家的13名宇航员成为太空流浪者。印度国家宇航局本计划在今日完成其三年前未尽的探测器登月项目，可又在成功的大门前功亏一篑。<br>无线电消失仅仅6个小时，地球的秩序就陷入一片混乱，街道上到处都是恐慌的人群，他们举着手机，无助地东奔西跑寻找信号。更有悲观人群认为这是世界末日的前兆，不顾形象在街头崩溃大哭。乱象此起彼伏，维护秩序的警察忙得焦头烂额……<br>人类费劲千辛万苦建立起的辉煌文明就要因为无线电的消失而毁灭吗？我抱着头，不断设想着各种最可怕的后果。<br>“昨日，’驿站’全球无线电通讯系统最后一个基站架设完毕，中国成为第一个具有在世界范围内进行低成本大容量无线电数据传输能力的国家！”我的耳边莫名其妙的传来了新闻主播雄厚自豪的声音。</p>
+<hr>
+<p>原文作于2019年，为高一一次省级征文比赛的参赛稿</p>
+<p>（悄咪咪说一句我是一等奖）</p>
+<p>感谢王红艳老师的指导</p>
+<p>祝她早日脱单</p>
 
       
     </div>

@@ -29,21 +29,20 @@
 <meta property="og:site_name" content="wl-thu的小站">
 <meta property="og:description" content="智方桌宠开发手记（一）——电脑状态上传至MQTT服务器智方桌宠开发手记（〇）——缘起与简介  主要参考资料：基于Arduino打造DIY极客电脑性能监控系统，基于AIDA64的电脑性能监控  如何在电脑运行的时候不用打开任务管理器就能获取电脑状态呢，如何让平平无奇的一个小方块看上去b格很高呢？远程状态监视站是个一石二鸟的好东西！ 这并不是一件难以实现的事情，经过在简中互联网的一番*里淘金，大致确定">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://s1.ax1x.com/2023/06/02/p9zhdrF.png">
 <meta property="og:image" content="https://s1.ax1x.com/2023/06/02/p9zhNvT.png">
-<meta property="og:image" content="g:\blog\source_posts\image\web_UI.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/06/02/p9zhdrF.png">
 <meta property="og:image" content="https://s1.ax1x.com/2023/06/02/p9zhaKU.png">
 <meta property="og:image" content="https://s1.ax1x.com/2023/06/02/p9zhwb4.png">
 <meta property="og:image" content="https://s1.ax1x.com/2023/06/02/p9zhBVJ.jpg">
 <meta property="article:published_time" content="2023-05-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2023-06-01T16:23:10.927Z">
+<meta property="article:modified_time" content="2023-06-02T02:49:13.287Z">
 <meta property="article:author" content="WL">
 <meta property="article:tag" content="esp32">
 <meta property="article:tag" content="LVGL">
 <meta property="article:tag" content="MPU6050">
 <meta property="article:tag" content="MQTT">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://s1.ax1x.com/2023/06/02/p9zhdrF.png">
+<meta name="twitter:image" content="https://s1.ax1x.com/2023/06/02/p9zhNvT.png">
 
 <link rel="canonical" href="http://example.com/2023/06/01/%E6%99%BA%E6%96%B9%E6%A1%8C%E5%AE%A0%E5%BC%80%E5%8F%91%E6%89%8B%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89%E2%80%94%E2%80%94%E7%94%B5%E8%84%91%E7%8A%B6%E6%80%81%E4%B8%8A%E4%BC%A0%E8%87%B3MQTT%E6%9C%8D%E5%8A%A1%E5%99%A8/">
 
@@ -236,7 +235,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-06-02 00:23:10" itemprop="dateModified" datetime="2023-06-02T00:23:10+08:00">2023-06-02</time>
+                <time title="修改时间：2023-06-02 10:49:13" itemprop="dateModified" datetime="2023-06-02T10:49:13+08:00">2023-06-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -278,11 +277,10 @@
 <li>esp32获取并解析状态数据，显示到屏幕上</li>
 </ol>
 <p>理论成立，开始实践。首先使用开源软件<a target="_blank" rel="noopener" href="https://openhardwaremonitor.org/">Open Hardware Monitor</a>获取电脑状态信息。虽然理论上AIDA64更高级功能也更多一些，但是貌似AIDA64对AMD的支持并不是十分之好，一直获取不到CPU的占用率，遂换用OHM。</p>
-<p><img src="https://s1.ax1x.com/2023/06/02/p9zhdrF.png" alt="OHM"></p>
-<p>在第一篇参考资料中，作者是使用python脚本直接从OPM中获取信息，这部分属于我的知识盲区，未敢复现。遂另辟蹊径，在OPM中有一个功能：Remote Web Server。使能这个选项后即可在本地端口上通过web界面查看各状态。</p>
+<p>在第一篇参考资料中，作者是使用python脚本直接从OHM中获取信息，这部分属于我的知识盲区，未敢复现。遂另辟蹊径，在OHM中有一个功能：Remote Web Server。使能这个选项后即可在本地端口上通过web界面查看各状态。</p>
 <p><img src="https://s1.ax1x.com/2023/06/02/p9zhNvT.png" alt="Remote Web Server"></p>
-<p><img src="G:\blog\source_posts\image\web_UI.png" alt="web界面"></p>
-<p>理论上此时通过端口映射就可以实现远程的状态监控，然而这并不是本项目需要完成的内容。倘若只需实现局域网内的状态监视的话，到这一步就足够了。esp32可以访问这个端口并解析数据。但只局限于局域网的状态传输显然不够优雅，且OPM貌似不支持选择性输出数据（AIDA64可以），因此esp32获取并解析这些数据可能会浪费部分的资源，并丢失一定的实时性。因此需要在电脑端就筛选出需要的数据，并打包上传至MQTT服务器，这样esp32只需要订阅一个topic就可以获取电脑的状态。</p>
+<p><img src="https://s1.ax1x.com/2023/06/02/p9zhdrF.png" alt="web界面"></p>
+<p>理论上此时通过端口映射就可以实现远程的状态监控，然而这并不是本项目需要完成的内容。倘若只需实现局域网内的状态监视的话，到这一步就足够了。esp32可以访问这个端口并解析数据。但只局限于局域网的状态传输显然不够优雅，且OHM貌似不支持选择性输出数据（AIDA64可以），因此esp32获取并解析这些数据可能会浪费部分的资源，并丢失一定的实时性。因此需要在电脑端就筛选出需要的数据，并打包上传至MQTT服务器，这样esp32只需要订阅一个topic就可以获取电脑的状态。</p>
 <p>数据处理那还是python给力，遂决定编写一个脚本来完成数据的获取、处理、和发送。查看浏览器后台发现web每次刷新时都会请求一次data.json</p>
 <p><img src="https://s1.ax1x.com/2023/06/02/p9zhaKU.png" alt="dataJson"></p>
 <p>查看data.json发现里面确实包含了所有需要的数据。</p>
@@ -298,7 +296,7 @@
 <p>自此电脑的性能数据已经上传至mqtt服务器，esp32只需要解析json包就可以直接获取。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">bemfa_callback</span><span class="params">(<span class="type">char</span> *topic, byte *payload, <span class="type">unsigned</span> <span class="type">int</span> length)</span></span><br><span class="line">&#123;</span><br><span class="line">  dataFlag = <span class="literal">false</span>;<span class="comment">//接收到数据后，将数据接收标志位置为false</span></span><br><span class="line">  Serial.print(<span class="string">&quot;Topic:&quot;</span>);</span><br><span class="line">  Serial.println(topic);</span><br><span class="line">  String msg = <span class="string">&quot;&quot;</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">    msg += (<span class="type">char</span>)payload[i];</span><br><span class="line">  &#125;</span><br><span class="line">  DynamicJsonDocument <span class="title function_">doc</span><span class="params">(<span class="number">1024</span>)</span>;</span><br><span class="line">  deserializeJson(doc, msg);</span><br><span class="line">  cpuTemp = doc[<span class="string">&quot;cpuTemp&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  cpuLoad = doc[<span class="string">&quot;cpuUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  gpuLoad = doc[<span class="string">&quot;gpuUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  memoryLoad = doc[<span class="string">&quot;memoryUsed&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  memoryUsed = doc[<span class="string">&quot;memoryUsedData&quot;</span>].as&lt;String&gt;();</span><br><span class="line">  dataFlag = <span class="literal">true</span>;<span class="comment">//数据接收完成，将数据接收标志位置为true,防止lvgl和mqtt同时操作数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>现在只要电脑上OPM和脚本都在运行，esp32还有网的话，在哪都能看到电脑状态啦！理论上只需要给脚本加上开机自启和自动打开OPM，就可以监测有没有好室友偷玩你的电脑，嘻嘻。</p>
+<p>现在只要电脑上OHM和脚本都在运行，esp32还有网的话，在哪都能看到电脑状态啦！理论上只需要给脚本加上开机自启和自动打开OHM，就可以监测有没有好室友偷玩你的电脑，嘻嘻。</p>
 <p>目前实现效果如图：(tft屏幕目测和拍出来差别还是挺大的)</p>
 <p><img src="https://s1.ax1x.com/2023/06/02/p9zhBVJ.jpg" alt="远程状态监视"></p>
 <p>mqtt服务器可以自己架设，也可以使用巴法云、阿里云等云端mqtt，目前我使用的是巴法云，毕竟没什么设备需要管理，巴法云足够了。</p>
